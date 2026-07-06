@@ -8,7 +8,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # for Trusted Publisher
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,4 +20,10 @@ jobs:
         run: |
           pip install uv
           uv build
-          uv publish
+          # Check if version already exists on PyPI before publishing
+          VERSION=$(python3 -c "import re; print(re.search(r'version\s*=\s*\"([^\"]+)\"', open('pyproject.toml').read()).group(1))")
+          if curl -sI "https://pypi.org/project/okf-nav/$VERSION/" | grep -q "200"; then
+            echo "Version $VERSION already exists on PyPI — skipping publish."
+          else
+            uv publish
+          fi
