@@ -7,17 +7,17 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: pypi
     permissions:
-      id-token: write
+      id-token: write  # for Trusted Publisher
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Build
+      - name: Build and Publish
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          pip install hatchling
-          python -m build
-      - name: Publish
-        uses: pypa/gh-action-pypi-publish@release/v1
+          pip install uv
+          uv build
+          uv publish
